@@ -1,0 +1,39 @@
+---
+title: Platform overview
+description: Understand how Fabort organizes accounts, access, projects, and resources.
+icon: Blocks
+---
+
+Fabort groups your work into a simple hierarchy:
+
+1. An **organization** is the top-level administrative and billing boundary.
+2. A **project** belongs to one organization and contains deployable resources.
+3. **Services and resources** belong to a project. These include container services, game servers, databases, secret stores, and machine templates.
+
+Teams connect people to the organization and determine what they may do. Permissions can apply across an organization or to projects, and project permissions can be limited to selected projects.
+
+## Choose the right scope
+
+| Scope | What belongs here |
+| --- | --- |
+| User account | Profile, avatar, password, and active login sessions |
+| Organization | People, teams, billing, usage, organization settings, and organization-wide audit events |
+| Project | Services, databases, secrets, machine templates, project limits, and project audit events |
+| Resource | Configuration and operational controls for one service, database, secret store, or other resource |
+
+The organization and project switchers control the current workspace. Lists such as Projects and Teams are filtered to the selected organization.
+
+## Typical setup flow
+
+1. Create an organization.
+2. Create one or more projects in it.
+3. Create teams and grant only the permissions each team needs.
+4. Add people to an appropriate team.
+5. Create resources inside a project.
+6. Use usage, billing, and audit pages to monitor the organization.
+
+## Permission-aware interface
+
+Fabort hides or disables actions that the signed-in user cannot perform. For example, creating a project requires project-create access, editing organization details requires organization-update access, and managing teams requires team permissions.
+
+Seeing a page does not necessarily grant write access. Some settings remain readable while their edit controls are unavailable.

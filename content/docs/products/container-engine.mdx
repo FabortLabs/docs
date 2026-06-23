@@ -1,0 +1,45 @@
+---
+title: Container Engine
+description: Build, deploy, version, expose, and observe container services.
+icon: Container
+---
+
+Container Engine runs a containerized application as a versioned service inside a project.
+
+## Create a service
+
+Open **Container Engine**, select **New Container Service**, and choose a source:
+
+- **Public Git** builds from a public source URL and branch.
+- **Git Provider** uses a project secret containing a personal access token or SSH key.
+- **Upload Files** accepts a `.zip`, `.tar`, `.tar.gz`, or `.tgz` archive up to 250 MB.
+- **Existing Image** deploys a container image without a source build.
+
+Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine preset or machine template. Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
+
+For preset machines, persistent disks are mounted under `/mnt/disks/<disk-name>`. A machine template supplies its own disk configuration.
+
+The initial version can be promoted immediately. Version policies include keeping old versions warm, scaling inactive versions to zero, and retaining the last three versions.
+
+## Operate a service
+
+The **Overview** shows service status, ready and desired replicas, the active version, endpoint, current configuration, and recent deployments. Start, stop, kill, and restart act on the active version.
+
+The remaining service pages provide:
+
+- **Versions** — start, stop, kill, or restart individual versions; roll back; split traffic across versions; and change the version-retention policy. A traffic split must total 100 percent.
+- **Scaling** — set replica bounds, CPU and optional memory targets, scale-up policy, and a 1, 5, or 10 minute scale-down delay. It also reports current HPA state.
+- **Network** — manage internal or public exposure and map HTTP, HTTPS, or TCP ports. Removing the external endpoint keeps internal access.
+- **Files** — choose a running pod, browse directories, read and write files, create directories, and delete paths.
+- **Logs** — stream container logs, inspect pod issues and Kubernetes events, and copy visible log lines.
+- **Metrics** — view live CPU, memory, network, disk, IOPS, replica, pod, and event data.
+- **Audit** — review events scoped to this service.
+- **Settings** — update the active version's image, entrypoint, ports, scaling, health checks, machine choice, and environment. Saving triggers a new deployment.
+
+<Callout type="warn" title="Runtime file changes are pod-local">
+  The file browser operates on a selected running pod. Treat image or deployment configuration as the durable source of truth unless the edited path is backed by persistent storage.
+</Callout>
+
+## Current endpoint limitation
+
+The endpoint create/edit interface displays name, host, automatic-hostname, HTTPS, and public-access controls, but the current update request persists only port mappings and internal versus load-balancer exposure. Do not rely on the other displayed values as saved custom-domain configuration.

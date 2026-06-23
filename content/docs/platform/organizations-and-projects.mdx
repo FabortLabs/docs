@@ -1,0 +1,63 @@
+---
+title: Organizations and projects
+description: Create the workspace hierarchy and manage project boundaries.
+icon: Building2
+---
+
+## Organizations
+
+An organization groups projects, teams, people, shared settings, billing, usage, and audit history. The Organizations page supports grid and table views and shows each organization's ID and plan.
+
+To create an organization:
+
+1. Open **Organizations**.
+2. Select **Create Organization**.
+3. Enter a name of at least two characters.
+4. Select **Create Organization**.
+
+After creation, Fabort opens the organization's Projects page.
+
+### Organization settings
+
+The organization Settings page shows the organization's name, slug, ID, plan, description, logo, and timestamps. Users with organization-update permission can:
+
+- Change the name and description.
+- Upload, replace, or remove the logo.
+
+The slug and organization ID are stable identifiers displayed for reference; the current interface does not edit them.
+
+## Projects
+
+A project is an isolation boundary for runtime resources. Every project belongs to exactly one organization. The Projects page shows projects for the currently selected organization and supports grid and table views.
+
+To create a project:
+
+1. Select the target organization.
+2. Open **Projects**.
+3. Select **Create Project**.
+4. Enter a project name.
+5. Select **Create Project**.
+
+Creating projects requires project-create permission. Fabort opens the new project after it is created.
+
+Each project exposes its ID, status, and last-deployed value. You can copy the project ID from the project list's action menu.
+
+## Project contents
+
+The project navigation exposes the resource types available in the current build:
+
+- Container services
+- Game servers
+- Databases
+- Secret stores
+- Machine templates
+- Project audit events
+- Project settings and limits
+
+Availability still depends on your assigned permissions and the organization's plan or configured limits.
+
+## Project limits
+
+Project Settings lists project-scoped entitlement features. For each available feature, an authorized user can enable or disable it, set a numeric cap, and set its unit. Leaving the value empty represents an unlimited value in the interface.
+
+Limits constrain resources created inside that project. They are distinct from organization-wide usage reporting and billing.

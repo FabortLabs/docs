@@ -1,0 +1,30 @@
+---
+title: Machine Templates
+description: Reuse compute, provisioning, and disk definitions across project workloads.
+icon: Cpu
+---
+
+A machine template packages compute and disk settings for reuse by Container Engine, Game Engine, and Databases in the same project.
+
+## Create a template
+
+1. Open **Machine Templates** and select **New Machine Template**.
+2. Enter a normalized template name.
+3. Choose **Non-preemptible** or **Preemptible** provisioning.
+4. Select a platform machine preset, or define custom CPU and memory values.
+5. Add one or more disks with a name, size, and disk type.
+6. Create the template.
+
+The initial disk is named `boot`, sized at `20Gi`, and uses the balanced disk type. CPU and memory are stored as platform resource strings, such as `1` CPU and `2Gi` memory.
+
+## Use a template
+
+In a workload creation form, switch the machine source from Preset to Machine Template and select the template. The workload receives the template's machine configuration and disks.
+
+Templates are project-scoped. A template created in one project is not offered in another project's workload forms.
+
+## Delete a template
+
+The Machine Templates list shows configuration source, CPU, memory, provisioning mode, and disks. It supports refresh and deletion, but the current UI has no edit or clone workflow.
+
+Deleting a template does not present dependency details in the frontend. Check whether active workloads refer to it before deletion; existing workload behavior depends on backend reconciliation and should not be inferred from the list UI.

@@ -1,0 +1,42 @@
+---
+title: Billing and usage
+description: Manage organization plans, billing details, wallet balance, and metered consumption.
+icon: CreditCard
+---
+
+Billing and usage are organization-scoped. Switch to the intended organization before changing a plan or reviewing consumption.
+
+## Billing account
+
+The Billing page combines:
+
+- Billing email, account currency, and tax metadata.
+- Available plans and their limits.
+- Recurring and metered price items.
+- Current subscriptions and their status.
+- Wallet balance and top-up controls when returned by the billing service.
+
+Tax metadata is entered as JSON and must be valid before it can be saved. Currency is normalized to uppercase.
+
+## Plans and subscriptions
+
+Fabort's catalog can contain free, subscription, and usage-based plans. A plan can include a recurring price, metered prices, included quantities, and feature limits.
+
+From Billing you can start a plan, switch from the current plan, schedule cancellation, or resume a scheduled cancellation. The checkout flow reviews the plan, collects billing details, and performs the configured payment step.
+
+<Callout type="info" title="Current payment behavior">
+  The current frontend interface labels plan payment as simulated. Do not treat the UI confirmation alone as evidence of an external payment processor charge.
+</Callout>
+
+Wallet top-ups are entered in the organization's billing currency. The interface converts the entered major-unit amount to minor units before creating the top-up payment.
+
+## Usage
+
+The Usage page reports metered consumption for the current billing period. Each metric can include:
+
+- Used quantity and unit
+- A configured limit and percentage consumed
+- Cost and currency
+- Billing-period start and end dates
+
+Usage is an observation of current metered consumption. Project Settings controls resource caps, while the organization's plan supplies account entitlements; these are related but separate views.

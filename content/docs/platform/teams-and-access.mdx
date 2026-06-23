@@ -1,0 +1,52 @@
+---
+title: Teams and access
+description: Add people, organize them into teams, and scope their permissions.
+icon: Users
+---
+
+Fabort grants workspace access through teams. A person is added to an organization by assigning them to one of its teams; the team's permissions then control the actions available to that person.
+
+## Create and manage a team
+
+1. Select an organization and open **Teams**.
+2. Select **Create Team**.
+3. Enter a name of at least two characters.
+4. Save the team.
+
+Team creation requires organization team-create permission. Depending on your access, you can also rename a team, delete it, or edit its permissions.
+
+The team list shows the team's name and slug, member count, role, and plan.
+
+## Add a person
+
+1. Open the organization's **Users** page.
+2. Select **Add Person**.
+3. Search by email address or username.
+4. Confirm the resolved account.
+5. Choose a team and select **Add Person**.
+
+The Users page displays each person's name, email, user ID, and current team memberships. The current interface adds existing Fabort accounts; it does not expose an email-invitation flow.
+
+Managing organization users currently uses the organization team-update permission.
+
+## Team permissions
+
+The permission editor groups available permissions by resource area. Permission keys encode four parts:
+
+```text
+resource:action:scope:access
+```
+
+For example, permissions distinguish reading a resource from creating, updating, deleting, executing, scaling, deploying, rolling back, exporting, or rotating it where those actions are supported.
+
+Organization-scoped permissions cover organization settings, audit events, billing, limits, and team management. Project-scoped permissions cover projects and resources such as container services, game services, databases, machine templates, and secrets.
+
+## Limit a permission to projects
+
+For a granted project-scoped permission, select **Configure projects** and choose the projects where it applies. If no explicit project list is stored, the editor treats the permission as applying to all projects in the organization.
+
+At least one project must remain selected when applying a project scope. Saving the editor persists both the permission set and its per-permission project scopes.
+
+<Callout type="warn" title="Use least privilege">
+  Grant only the actions a team needs, then narrow project-scoped permissions to the relevant projects. A broad resource permission and an all-project scope combine to provide organization-wide access to that resource type.
+</Callout>

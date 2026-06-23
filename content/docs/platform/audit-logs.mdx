@@ -1,0 +1,31 @@
+---
+title: Audit logs
+description: Review organization-wide and project-scoped activity.
+icon: ScrollText
+---
+
+Fabort provides audit views at organization and project scope.
+
+## Organization audit log
+
+The organization Audit Log includes organization-wide events across projects, services, databases, secrets, and organization changes. Use it when an investigation spans multiple projects or when you do not yet know where an event occurred.
+
+## Project audit log
+
+The project Audit Log narrows events to one project, including its services, databases, secrets, and project changes.
+
+Both views show:
+
+- Event time
+- Action and resource type
+- Project ID and service kind when present
+- Service name, resource ID, or event ID
+- Optional reason
+- Outcome
+- Actor user ID
+
+The view requests up to 200 events and refreshes every 15 seconds. Tables provide search, filtering, sorting, column controls, and pagination when events are available.
+
+Service detail pages can also expose resource-specific audit views, such as a container service or game server audit log.
+
+Audit visibility is permission-controlled. Organization audit and project audit use distinct read permissions, so access to one scope does not imply access to the other.

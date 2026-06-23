@@ -1,0 +1,11 @@
+{
+  "title": "Products",
+  "pages": [
+    "index",
+    "container-engine",
+    "databases",
+    "game-engine",
+    "secrets",
+    "machine-templates"
+  ]
+}

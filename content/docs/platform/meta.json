@@ -1,0 +1,11 @@
+{
+  "title": "Platform",
+  "pages": [
+    "index",
+    "organizations-and-projects",
+    "teams-and-access",
+    "billing-and-usage",
+    "audit-logs",
+    "account-and-security"
+  ]
+}

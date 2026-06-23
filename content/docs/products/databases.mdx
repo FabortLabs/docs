@@ -1,0 +1,38 @@
+---
+title: Databases
+description: Provision project databases with persistent storage and secret-backed credentials.
+icon: Database
+---
+
+Fabort can provision PostgreSQL, MySQL, Redis, and MongoDB instances in a project.
+
+## Create a database
+
+1. Open **Databases** and select **Create Database**.
+2. Enter a name and choose the engine and version.
+3. Set storage from 1 to 1,000 GB.
+4. Choose a region and availability zone.
+5. Select a machine preset or project machine template.
+6. Set the username or accept the generated default.
+7. Let Fabort generate a secure password, or select an existing project secret.
+8. Create the database.
+
+Names are normalized to lowercase, dash-separated identifiers up to 48 characters. Redis defaults to the username `default`; other engines default to the normalized database name.
+
+Fabort provisions the database workload, service, credentials, and Longhorn-backed persistent volume. The detail page refreshes runtime state every 10 seconds.
+
+## Connect
+
+Overview displays engine, version, status, host, port, username, machine, template, and a connection value. Passwords are managed through Secrets; when a credential secret is attached, use **Open** to inspect it if your permissions allow secret-value access.
+
+An address ending in `.svc.cluster.local` is internal to the runtime network. In that state, the frontend reports that the external endpoint is pending and recommends service-to-service access.
+
+## Delete a database
+
+The Databases list supports permanent deletion. Confirm the target carefully and preserve any required data first. The current product UI does not expose an interactive restore operation.
+
+## Current management-tab limitations
+
+The frontend displays pages for Table Editor, SQL Editor, Functions, Triggers, Policies, Indexes, Extensions, Replication, Backups, and Webhooks. In the current implementation these pages show capability descriptions and copyable SQL examples; they do not execute queries, browse live rows, configure replication, create webhooks, or run backup/restore jobs.
+
+The storage percentage shown on Overview and Backups is derived from allocated storage against a fixed UI reference value. It is not measured live disk utilization.

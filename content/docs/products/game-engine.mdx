@@ -1,0 +1,41 @@
+---
+title: Game Engine
+description: Deploy and operate dedicated game servers from enabled presets.
+icon: Gamepad2
+---
+
+Game Engine runs dedicated game containers using presets enabled by the platform administrator.
+
+## Create a game server
+
+1. Open **Game Engine** and select **Launch Game Server**.
+2. Enter a server name and select an available game preset.
+3. Choose a runner version when the preset offers multiple runtime images.
+4. Set the primary allocation port, region, and availability zone.
+5. Complete preset variables. Required secret variables must reference project secrets.
+6. Review the startup command. Some presets prevent overriding it.
+7. Add typed or secret-backed environment variables as needed.
+8. Choose replica limits and a machine preset or machine template.
+9. Set world-storage size and create the server.
+
+If the frontend reports that no enabled presets are available, an administrator must add or enable a game catalog entry before a server can be created.
+
+## Operate a server
+
+- **Overview** reports runtime status, endpoint, replicas, configuration, health, events, and supports restart.
+- **Console** opens a streaming game console for the selected running pod and accepts commands.
+- **Files** provides pod file browsing, reading, writing, directory creation, and deletion.
+- **Metrics** charts CPU, memory, network, disk, IOPS, replicas, pods, and events.
+- **Network** manages TCP ports and switches between private runtime access and a public load-balancer endpoint.
+- **Worlds** lists configured persistent volumes and mount paths.
+- **Audit** shows events scoped to the game service.
+
+The edit workflow can change the image, startup command, environment, allocation port, replica limits, machine source, and world-storage configuration. The list page can permanently delete a game server and its deployments; back up required world data first.
+
+## Incomplete pages
+
+The following pages are present but are not complete management features:
+
+- **Players** only reports node count and states that player sessions require a future game adapter/RCON integration.
+- **Backups** only describes snapshot intent and attached world storage. It does not create, list, restore, or schedule backups.
+- **Worlds** is currently read-only; it lists volumes but does not manage worlds as game-level objects.
