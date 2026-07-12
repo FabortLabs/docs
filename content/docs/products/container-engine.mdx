@@ -10,12 +10,19 @@ Container Engine runs a containerized application as a versioned service inside 
 
 Open **Container Engine**, select **New Container Service**, and choose a source:
 
-- **Public Git** builds from a public source URL and branch.
-- **Git Provider** uses a project secret containing a personal access token or SSH key.
-- **Upload Files** accepts a `.zip`, `.tar`, `.tar.gz`, or `.tgz` archive up to 250 MB.
-- **Existing Image** deploys a container image without a source build.
+- **Git Provider** connects a personal GitHub, GitLab, or Bitbucket Cloud account and selects one of its repositories. Providers that have not been configured by the platform remain visible but disabled.
+- **Git Repository** builds a public HTTPS repository directly or uses a Git HTTPS/SSH credential store for a private repository.
+- **Existing Image** deploys a public OCI image directly or uses an OCI registry credential store for a private registry.
+
+Source deployments run as isolated BuildKit jobs. Fabort records the resolved build operation, pushes an immutable image, and creates the workload only after the build succeeds. Failed builds do not change active traffic and can be retried manually.
 
 Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine preset or machine template. Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
+
+## Platform configuration
+
+Source builds require `CONTAINER_BUILD_REGISTRY_PUSH_PREFIX`, `CONTAINER_BUILD_REGISTRY_PULL_PREFIX`, `CONTAINER_BUILD_IMAGE_PULL_SECRET`, and a build-worker image selected with `CONTAINER_BUILD_JOB_IMAGE`. The supplied `fabort-build-worker:prod` image is used by default.
+
+Git provider connections use a shared callback in `GIT_OAUTH_CALLBACK_URL` and the provider credentials `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`, `GITLAB_CLIENT_ID`/`GITLAB_CLIENT_SECRET`, and `BITBUCKET_CLIENT_ID`/`BITBUCKET_CLIENT_SECRET`. A provider is disabled unless its client ID, client secret, and the callback URL are all present.
 
 For preset machines, persistent disks are mounted under `/mnt/disks/<disk-name>`. A machine template supplies its own disk configuration.
 
