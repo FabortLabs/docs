@@ -11,12 +11,16 @@ Container Engine runs a containerized application as a versioned service inside 
 Open **Container Engine**, select **New Container Service**, and choose a source:
 
 - **Git Provider** connects a personal GitHub, GitLab, or Bitbucket Cloud account and selects one of its repositories. Providers that have not been configured by the platform remain visible but disabled.
-- **Git Repository** builds a public HTTPS repository directly or uses a Git HTTPS/SSH credential store for a private repository.
+- **Git Repository** verifies the repository before creation, fetches its branches, selects its default branch, and detects common runtime, Dockerfile, command, and exposed-port settings. Public repositories need no credential. For private repositories, select or create an encrypted Git HTTPS/SSH project credential and verify again.
 - **Existing Image** deploys a public OCI image directly or uses an OCI registry credential store for a private registry.
 
 Source deployments run as isolated BuildKit jobs. Fabort records the resolved build operation, pushes an immutable image, and creates the workload only after the build succeeds. Failed builds do not change active traffic and can be retried manually.
 
 Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine preset or machine template. Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
+
+Repository verification rejects embedded credentials, inaccessible branches, unverified SSH hosts, and repository hosts that resolve to local, private, link-local, or metadata networks. Changing the repository or credential invalidates the previous verification. Creation verifies the selected branch again before a build starts.
+
+Git HTTPS credentials contain a username and token. Git SSH credentials contain a private key and a verified `known_hosts` entry. Fabort never obtains and trusts a self-hosted SSH key automatically; verify its fingerprint through a trusted channel first.
 
 ## Platform configuration
 
