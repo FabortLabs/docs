@@ -1,41 +1,48 @@
 ---
 title: Game Engine
-description: Deploy and operate dedicated game servers from enabled presets.
+description: Deploy and operate catalog-managed, stateful dedicated game servers.
 icon: Gamepad2
 ---
 
-Game Engine runs dedicated game containers using presets enabled by the platform administrator.
+Game Engine runs one stateful dedicated-server instance from a published platform catalog release. Catalog releases use named, validated fields instead of an opaque JSON template, and published releases are immutable.
 
 ## Create a game server
 
 1. Open **Game Engine** and select **Launch Game Server**.
-2. Enter a server name and select an available game preset.
-3. Choose a runner version when the preset offers multiple runtime images.
-4. Set the primary allocation port, region, and availability zone.
-5. Complete preset variables. Required secret variables must reference project secrets.
-6. Review the startup command. Some presets prevent overriding it.
-7. Add typed or secret-backed environment variables as needed.
-8. Choose replica limits and a machine preset or machine template.
-9. Set world-storage size and create the server.
+2. Enter a server name, select a game, and choose one of its published releases.
+3. Complete the release's typed settings. Secret settings reference project secret keys and are never entered as plaintext.
+4. Choose CPU, memory, and persistent-volume sizes inside the release's administrator-defined bounds.
+5. Select a region and availability zone, then create the server.
 
-If the frontend reports that no enabled presets are available, an administrator must add or enable a game catalog entry before a server can be created.
+Images, digests, startup and stop commands, ports, config-file bindings, and storage mount paths are controlled by the published release. Tenants cannot substitute arbitrary images or commands. A release can use a prebuilt digest-pinned image or a digest-pinned SteamCMD installer. SteamCMD installs into persistent storage before the game starts.
+
+If no releases are available, an administrator must enable a game and publish at least one valid release in Operator's **Game Catalog**.
 
 ## Operate a server
 
-- **Overview** reports runtime status, endpoint, replicas, configuration, health, events, and supports restart.
+- **Overview** reports runtime status, endpoint, release, configuration, health, events, and supports restart.
 - **Console** opens a streaming game console for the selected running pod and accepts commands.
 - **Files** provides pod file browsing, reading, writing, directory creation, and deletion.
 - **Metrics** charts CPU, memory, network, disk, IOPS, replicas, pods, and events.
 - **Network** manages TCP ports and switches between private runtime access and a public load-balancer endpoint.
 - **Worlds** lists configured persistent volumes and mount paths.
+- **Backups** creates private, crash-consistent RustFS archives, verifies SHA-256 checksums, offers short-lived downloads, and restores verified archives while the server is stopped. Running servers receive a daily backup and retain the newest seven completed archives. Stop the server first when an application-consistent archive is required.
+- **Releases** performs an explicit upgrade to another published release while the server is stopped. Persistent volumes are retained; a failed Kubernetes apply attempts to restore the previous workload definition.
 - **Audit** shows events scoped to the game service.
 
-The edit workflow can change the image, startup command, environment, allocation port, replica limits, machine source, and world-storage configuration. The list page can permanently delete a game server and its deployments; back up required world data first.
+Game servers are intentionally single-instance workloads backed by a StatefulSet, headless Service, and platform-managed persistent volume claims. The list page can permanently delete a game server workload; create a backup before deleting data you need to retain.
+
+## Platform catalog lifecycle
+
+Administrators create a game identity and one or more draft releases in Operator. Each release names its architecture, install strategy, digest-pinned images, process lifecycle, readiness check, resource envelope, typed tenant variables, ports, persistent volumes, backup eligibility, and config-file bindings. Config bindings are rendered through a Kubernetes Secret and copied into persistent storage before startup.
+
+Runtime images are part of the platform contract: they must provide `/bin/sh` for lifecycle and configuration setup, plus `tar` and the standard file utilities used by backup and restore helpers. Every config-file path must live inside a declared persistent-volume mount.
+
+Publishing validates the complete release and makes it immutable and tenant-visible. Later changes require a new release and an explicit tenant upgrade. The typed game catalog starts empty and administrators create all games and releases through Operator; legacy JSON templates are not imported.
 
 ## Incomplete pages
 
 The following pages are present but are not complete management features:
 
 - **Players** only reports node count and states that player sessions require a future game adapter/RCON integration.
-- **Backups** only describes snapshot intent and attached world storage. It does not create, list, restore, or schedule backups.
 - **Worlds** is currently read-only; it lists volumes but does not manage worlds as game-level objects.
