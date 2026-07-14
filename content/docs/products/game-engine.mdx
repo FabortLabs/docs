@@ -4,19 +4,21 @@ description: Deploy and operate catalog-managed, stateful dedicated game servers
 icon: Gamepad2
 ---
 
-Game Engine runs one stateful dedicated-server instance from a published platform catalog release. Catalog releases use named, validated fields instead of an opaque JSON template, and published releases are immutable.
+Game Engine runs one stateful dedicated-server instance from a platform-managed game version. Games, versions, images, installers, lifecycle commands, files, ports, variables, resources, and storage are stored in named database fields instead of opaque catalog JSON.
 
 ## Create a game server
 
 1. Open **Game Engine** and select **Launch Game Server**.
-2. Enter a server name, select a game, and choose one of its published releases.
-3. Complete the release's typed settings. Secret settings reference project secret keys and are never entered as plaintext.
-4. Choose CPU, memory, and persistent-volume sizes inside the release's administrator-defined bounds.
+2. Enter a server name, select a game and version, then choose one of the version's administrator-approved runtime images.
+3. Complete the version's typed settings. Secret settings reference project secret keys and are never entered as plaintext.
+4. Choose a platform machine preset or a reusable project machine template. Its CPU and memory must fit the version's administrator-defined safety envelope. A template disk whose name matches a catalog volume supplies that volume's size.
 5. Select a region and availability zone, then create the server.
 
-Images, digests, startup and stop commands, ports, config-file bindings, and storage mount paths are controlled by the published release. Tenants cannot substitute arbitrary images or commands. A release can use a prebuilt digest-pinned image or a digest-pinned SteamCMD installer. SteamCMD installs into persistent storage before the game starts.
+Images, digests, installation scripts, startup and stop commands, ports, managed files, and storage mount paths are controlled by the selected version. Tenants cannot substitute arbitrary images or commands. A version can use a prebuilt image, SteamCMD, or a digest-pinned installer image and bounded installation script. Installers run against persistent storage before the game starts.
 
-If no releases are available, an administrator must enable a game and publish at least one valid release in Operator's **Game Catalog**.
+Catalog network definitions are endpoint presets for the same unified networking system used by other workloads. Target ports are container-local and may safely use the same number in every tenant workload. HTTP and HTTPS endpoints use cluster gateway routing, while public TCP/UDP endpoints receive a unique address and port from the selected cluster's configured pool through an atomic allocation claim. Tenants never share the same public IP, port, and protocol tuple, and creation fails cleanly when no compatible route or public-port pool is available.
+
+Fresh installations seed Minecraft Vanilla and Minecraft Paper versions. Administrators manage these and additional games under Operator's **Catalog Management → Game Engine**.
 
 ## Operate a server
 
@@ -27,18 +29,21 @@ If no releases are available, an administrator must enable a game and publish at
 - **Network** manages TCP ports and switches between private runtime access and a public load-balancer endpoint.
 - **Worlds** lists configured persistent volumes and mount paths.
 - **Backups** creates private, crash-consistent RustFS archives, verifies SHA-256 checksums, offers short-lived downloads, and restores verified archives while the server is stopped. Running servers receive a daily backup and retain the newest seven completed archives. Stop the server first when an application-consistent archive is required.
-- **Releases** performs an explicit upgrade to another published release while the server is stopped. Persistent volumes are retained; a failed Kubernetes apply attempts to restore the previous workload definition.
+- **Versions** performs an explicit upgrade to another catalog version and approved image while the server is stopped. Persistent volumes are retained; a failed Kubernetes apply attempts to restore the previous workload definition.
+- **Reinstall** re-runs the selected version's installer while retaining persistent data. The server must be stopped before reinstalling.
 - **Audit** shows events scoped to the game service.
 
 Game servers are intentionally single-instance workloads backed by a StatefulSet, headless Service, and platform-managed persistent volume claims. The list page can permanently delete a game server workload; create a backup before deleting data you need to retain.
 
 ## Platform catalog lifecycle
 
-Administrators create a game identity and one or more draft releases in Operator. Each release names its architecture, install strategy, digest-pinned images, process lifecycle, readiness check, resource envelope, typed tenant variables, ports, persistent volumes, backup eligibility, and config-file bindings. Config bindings are rendered through a Kubernetes Secret and copied into persistent storage before startup.
+Administrators use separate list, create, detail, and edit pages in Operator. The game detail page contains the version table, and versions have their own create and edit pages. Each version names its install strategy, one or more digest-pinned runtime images, installer image and script, process lifecycle, readiness check, resource envelope, typed tenant variables, default network endpoints, optional persistent volumes, backup eligibility, file templates, and structured file patches. Nothing in this contract is Minecraft-specific; Minecraft Vanilla and Paper are ordinary seeded entries using the same fields as any SteamCMD, prebuilt-image, or scripted dedicated server.
 
-Runtime images are part of the platform contract: they must provide `/bin/sh` for lifecycle and configuration setup, plus `tar` and the standard file utilities used by backup and restore helpers. Every config-file path must live inside a declared persistent-volume mount.
+File templates are created only when the target file does not already exist. Structured patches are enforced during startup. All managed file paths must live inside a declared persistent-volume mount.
 
-Publishing validates the complete release and makes it immutable and tenant-visible. Later changes require a new release and an explicit tenant upgrade. The typed game catalog starts empty and administrators create all games and releases through Operator; legacy JSON templates are not imported.
+Runtime images are part of the platform contract: they must provide `/bin/sh` for lifecycle and configuration setup, plus `tar` and the standard file utilities used by backup and restore helpers. The platform runner owns the process input channel, so the configured stop command is sent to the game process during graceful termination.
+
+Saving validates the complete version and makes it tenant-visible immediately. Existing services remain pinned to their stored runtime contract until an explicit version upgrade or reinstall. Legacy generic catalog tables and JSON templates are deleted rather than migrated.
 
 ## Incomplete pages
 
