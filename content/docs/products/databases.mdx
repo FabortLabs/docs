@@ -9,17 +9,17 @@ Fabort can provision PostgreSQL, MySQL, Redis, and MongoDB instances in a projec
 ## Create a database
 
 1. Open **Databases** and select **Create Database**.
-2. Enter a name and choose the engine and version.
-3. Set storage from 1 to 1,000 GB.
-4. Choose a region and availability zone.
+2. Enter a name, region, and availability zone under **General**.
+3. Choose the engine and version, then set the username or accept the generated default.
+4. Let Fabort generate a secure password, or select an existing project secret.
 5. Select a machine preset or project machine template.
-6. Set the username or accept the generated default.
-7. Let Fabort generate a secure password, or select an existing project secret.
-8. Create the database.
+6. Review the prefilled internal TCP endpoint. You can add, remove, or change endpoints, including public hostname or address allocation. The endpoint name is the default hostname label, and the complete hostname and availability state appear below the name while you type.
+7. Set persistent storage from 1 to 1,000 GB.
+8. Review and create the database.
 
 Names are normalized to lowercase, dash-separated identifiers up to 48 characters. Redis defaults to the username `default`; other engines default to the normalized database name.
 
-Fabort provisions the database workload, service, credentials, and Longhorn-backed persistent volume. The detail page refreshes runtime state every 10 seconds.
+Fabort provisions the database workload, service, editable network endpoints, credentials, and Longhorn-backed persistent volume. If an older client omits endpoint configuration, Fabort creates an internal TCP endpoint on the catalog port.
 
 ## Connect
 

@@ -40,7 +40,7 @@ The remaining service pages provide:
 
 - **Versions** — start, stop, kill, or restart individual versions; roll back; split traffic across versions; and change the version-retention policy. A traffic split must total 100 percent.
 - **Scaling** — set replica bounds, CPU and optional memory targets, scale-up policy, and a 1, 5, or 10 minute scale-down delay. It also reports current HPA state.
-- **Network** — manage internal or public exposure and map HTTP, HTTPS, or TCP ports. Removing the external endpoint keeps internal access.
+- **Network** — create, edit, and remove HTTP, HTTPS, TLS, TCP, and UDP endpoints with internal or public exposure. The endpoint name is the default hostname label, and the complete hostname and availability state appear below the name while you type.
 - **Files** — choose a running pod, browse directories, read and write files, create directories, and delete paths.
 - **Logs** — stream container logs, inspect pod issues and Kubernetes events, and copy visible log lines.
 - **Metrics** — view live CPU, memory, network, disk, IOPS, replica, pod, and event data.
@@ -51,6 +51,6 @@ The remaining service pages provide:
   The file browser operates on a selected running pod. Treat image or deployment configuration as the durable source of truth unless the edited path is backed by persistent storage.
 </Callout>
 
-## Current endpoint limitation
-
-The endpoint create/edit interface displays name, host, automatic-hostname, HTTPS, and public-access controls, but the current update request persists only port mappings and internal versus load-balancer exposure. Do not rely on the other displayed values as saved custom-domain configuration.
+Endpoint names are immutable after creation. To rename one, delete it and
+create a replacement. Public HTTP, HTTPS, and TLS hostnames are verified before
+the mutation is enabled.
