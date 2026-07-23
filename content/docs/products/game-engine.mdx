@@ -12,11 +12,12 @@ Game Engine runs one stateful dedicated-server instance from a platform-managed 
 2. Enter a server name, select a game and version, then choose one of the version's administrator-approved runtime images.
 3. Complete the version's typed settings. Secret settings reference project secret keys and are never entered as plaintext.
 4. Choose a platform machine preset or a reusable project machine template. Its CPU and memory must fit the version's administrator-defined safety envelope. A template disk whose name matches a catalog volume supplies that volume's size.
-5. Select a region and availability zone, then create the server.
+5. Review the version's prefilled network endpoints. You can add, remove, or change endpoints before creation.
+6. Select a region and availability zone, then create the server.
 
-Images, digests, installation scripts, startup and stop commands, ports, managed files, and storage mount paths are controlled by the selected version. Tenants cannot substitute arbitrary images or commands. A version can use a prebuilt image, SteamCMD, or a digest-pinned installer image and bounded installation script. Installers run against persistent storage before the game starts.
+Images, digests, installation scripts, startup and stop commands, managed files, and storage mount paths are controlled by the selected version. Network endpoints start from version defaults and remain independently editable. Tenants cannot substitute arbitrary images or commands. A version can use a prebuilt image, SteamCMD, or a digest-pinned installer image and bounded installation script. Installers run against persistent storage before the game starts.
 
-Catalog network definitions are endpoint presets for the same unified networking system used by other workloads. Target ports are container-local and may safely use the same number in every tenant workload. HTTP and HTTPS endpoints use cluster gateway routing, while public TCP/UDP endpoints receive a unique address and port from the selected cluster's configured pool through an atomic allocation claim. Tenants never share the same public IP, port, and protocol tuple, and creation fails cleanly when no compatible route or public-port pool is available.
+Catalog network definitions are editable presets for the same unified networking system used by other workloads. Target ports are container-local and may safely use the same number in every tenant workload. HTTP and HTTPS use hostname gateway routing, TLS passes encrypted traffic through to the workload, and public TCP/UDP/TLS endpoints receive an address and port from the selected cluster's configured pool through an atomic allocation claim. Users may request an available hostname, public address, or public port, or leave those fields blank for automatic allocation. Tenants never share the same public hostname or public IP, port, and protocol tuple, and creation fails cleanly when no compatible route or allocation pool is available.
 
 Fresh installations seed Minecraft Vanilla and Minecraft Paper versions. Administrators manage these and additional games under Operator's **Catalog Management → Game Engine**.
 
@@ -26,7 +27,7 @@ Fresh installations seed Minecraft Vanilla and Minecraft Paper versions. Adminis
 - **Console** opens a streaming game console for the selected running pod and accepts commands.
 - **Files** provides pod file browsing, reading, writing, directory creation, and deletion.
 - **Metrics** charts CPU, memory, network, disk, IOPS, replicas, pods, and events.
-- **Network** manages TCP ports and switches between private runtime access and a public load-balancer endpoint.
+- **Network** creates, edits, and removes HTTP, HTTPS, TLS, TCP, and UDP endpoints with internal or public exposure.
 - **Worlds** lists configured persistent volumes and mount paths.
 - **Backups** creates private, crash-consistent RustFS archives, verifies SHA-256 checksums, offers short-lived downloads, and restores verified archives while the server is stopped. Running servers receive a daily backup and retain the newest seven completed archives. Stop the server first when an application-consistent archive is required.
 - **Versions** performs an explicit upgrade to another catalog version and approved image while the server is stopped. Persistent volumes are retained; a failed Kubernetes apply attempts to restore the previous workload definition.
