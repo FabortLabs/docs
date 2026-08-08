@@ -1,42 +1,70 @@
 ---
-title: Billing and usage
-description: Manage organization plans, billing details, wallet balance, and metered consumption.
+title: Billing and payments
+description: Regional prices, provider checkout, tax documents, subscriptions, and metered usage.
 icon: CreditCard
 ---
 
-Billing and usage are organization-scoped. Switch to the intended organization before changing a plan or reviewing consumption.
+Billing is organization-scoped. Switch to the intended organization before
+changing a billing profile, starting checkout, or managing a subscription.
 
-## Billing account
+## Billing profile and regional prices
 
-The Billing page combines:
+The Billing page records the buyer type, country, postal address, billing email,
+and optional tax identifiers and location evidence. Sensitive address and tax
+fields are encrypted and are write-only after submission.
 
-- Billing email, account currency, and tax metadata.
-- Available plans and their limits.
-- Recurring and metered price items.
-- Current subscriptions and their status.
-- Wallet balance and top-up controls when returned by the billing service.
+Fabort resolves an immutable published price for the billing country, configured
+region group, or global fallback. Currency amounts are stored and transported as
+integer minor-unit strings. A published price is never changed by live foreign
+exchange rates, and an active subscription keeps its price version, country,
+currency, and provider until an explicit change.
 
-Tax metadata is entered as JSON and must be valid before it can be saved. Currency is normalized to uppercase.
+## Quotes and checkout
 
-## Plans and subscriptions
+Each eligible payment provider returns a separately frozen, short-lived option.
+An option shows the provider, legal seller, payment methods, currency, subtotal,
+tax behavior, tax, and total. Provider eligibility is determined by published
+country policy, provider capabilities, tax coverage, and merchant approval; the
+browser cannot select an arbitrary provider.
 
-Fabort's catalog can contain free, subscription, and usage-based plans. A plan can include a recurring price, metered prices, included quantities, and feature limits.
+- Paddle is the merchant of record. Paddle's localized price, tax result, legal
+  seller, and buyer invoice or receipt are authoritative.
+- Razorpay is a payment gateway. Fabort calculates tax and issues the invoice and
+  any credit notes under the applicable published seller registration.
 
-From Billing you can start a plan, switch from the current plan, schedule cancellation, or resume a scheduled cancellation. The checkout flow reviews the plan, collects billing details, and performs the configured payment step.
+Checkout may redirect to a hosted page, initialize a provider SDK using public
+data, remain pending, or already be complete. Card and bank credentials never
+pass through Fabort. A browser redirect never activates service: only a verified
+provider webhook or authenticated provider lookup can finalize payment and
+project entitlements.
 
-<Callout type="info" title="Current payment behavior">
-  The current frontend interface labels plan payment as simulated. Do not treat the UI confirmation alone as evidence of an external payment processor charge.
-</Callout>
+## Subscriptions and history
 
-Wallet top-ups are entered in the organization's billing currency. The interface converts the entered major-unit amount to minor units before creating the top-up payment.
+Billing history lists payments, subscriptions, invoices, and credit notes. A
+provider change for a recurring subscription creates replacement checkout for
+renewal rather than silently moving the existing subscription. Pending and failed
+provider operations remain visible and can be reconciled by Finance.
+
+Gateway invoices and credit notes are immutable, sequentially numbered documents
+generated from versioned templates and archived with a content hash. Paddle
+documents shown by Fabort are accounting references and do not replace Paddle's
+buyer tax invoice.
 
 ## Usage
 
-The Usage page reports metered consumption for the current billing period. Each metric can include:
+The Usage page reports metered consumption for the current billing period,
+including the used quantity, unit, configured limit, cost, currency, and billing
+period when available. CockroachDB is authoritative for commerce and money;
+ScyllaDB contains only asynchronously projected entitlements and limits.
 
-- Used quantity and unit
-- A configured limit and percentage consumed
-- Cost and currency
-- Billing-period start and end dates
+## Finance controls
 
-Usage is an observation of current metered consumption. Project Settings controls resource caps, while the organization's plan supplies account entitlements; these are related but separate views.
+Operator Finance manages products, effective-dated regional price books, tax
+registrations and policy tests, provider availability and credentials,
+reconciliation, refunds, disputes, journals, and failed operations. Sensitive
+actions require their own permission. Credential rotation and controlled repair
+commands require recent step-up authentication and append-only audit evidence.
+
+Gateway sales fail closed until Finance and legal have published complete country
+configuration. India remains disabled until seller GST details and reviewed tax
+test vectors are published.
