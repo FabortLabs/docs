@@ -8,6 +8,7 @@
     "build": "vite build",
     "start": "serve .output/public --config ../../serve.json",
     "preview": "vite preview",
+    "format": "prettier --write .",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
   },
@@ -34,6 +35,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "nitro": "3.0.260610-beta",
+    "prettier": "^3.5.0",
     "serve": "^14.2.6",
     "srvx": "^0.11.16",
     "tailwindcss": "^4.3.1",

@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+.cache
+.nitro
+.output
+.source
+.tanstack
+.vercel
+coverage
+src/routeTree.gen.ts
