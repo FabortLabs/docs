@@ -23,16 +23,27 @@ Fabort provisions the database workload, service, editable network endpoints, cr
 
 ## Connect
 
-Overview displays engine, version, status, host, port, username, machine, template, and a connection value. Passwords are managed through Secrets; when a credential secret is attached, use **Open** to inspect it if your permissions allow secret-value access.
+Overview displays engine, version, status, host, port, username, storage, machine, and template. A **Connect** panel lists a connection URL and the matching command line client (`psql`, `mysql`, `redis-cli`, or `mongosh`) for the engine. The password is never shown: the commands read it from a `DB_PASSWORD` environment variable. Passwords are managed through Secrets; when a credential secret is attached, use **Open** to inspect it if your permissions allow secret-value access.
 
-An address ending in `.svc.cluster.local` is internal to the runtime network. In that state, the frontend reports that the external endpoint is pending and recommends service-to-service access.
+An address ending in `.svc.cluster.local` is internal to the runtime network. In that state, the frontend reports that the external endpoint is pending and the Connect panel stays empty until an endpoint with an address is active.
+
+## Database sections
+
+- **Overview**: status, host health, connection details, and the Connect panel.
+- **Logs**: the latest 500 lines from the database pods, with search and a per-pod filter. Auto refresh runs every five seconds and can be paused.
+- **Metrics**: CPU, memory, network, and disk charts for a chosen time range and resolution, from the node agent's telemetry. When nothing was reported for the window the page says so instead of drawing empty charts.
+- **Backups**: persistent volume status, snapshots, backups, restores, and volume expansion.
+- **Network**: add, change, or remove endpoints.
+- **Settings**: a description, labels, and deletion protection, plus the credential secret and the delete action.
+
+Logs and metrics require database read permission. Deletion protection is enforced by the API: while it is on, the database cannot be deleted from Studio or Operator until it is turned off.
 
 ## Delete a database
 
-The Databases list supports permanent deletion. Confirm the target carefully and preserve any required data first. The current product UI does not expose an interactive restore operation.
+Delete a database from its **Settings** page or the Databases list. You are asked to confirm by typing the name. Preserve any required data first with a snapshot or backup; deleting removes the database, its data, and its endpoints.
 
-## Current management-tab limitations
+## Not available
 
-The frontend displays pages for Table Editor, SQL Editor, Functions, Triggers, Policies, Indexes, Extensions, Replication, Backups, and Webhooks. In the current implementation these pages show capability descriptions and copyable SQL examples; they do not execute queries, browse live rows, configure replication, create webhooks, or run backup/restore jobs.
+Fabort does not run queries for you. There is no table editor, SQL editor, trigger, policy, extension, replication, or webhook management; connect with a database client using the commands above.
 
-The storage percentage shown on Overview and Backups is derived from allocated storage against a fixed UI reference value. It is not measured live disk utilization.
+The storage figures reflect the allocated volume, not measured disk utilization.
