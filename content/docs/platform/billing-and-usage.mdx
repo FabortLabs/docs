@@ -35,8 +35,10 @@ browser cannot select an arbitrary provider.
 Checkout may redirect to a hosted page, initialize a provider SDK using public
 data, remain pending, or already be complete. Card and bank credentials never
 pass through Fabort. A browser redirect never activates service: only a verified
-provider webhook or authenticated provider lookup can finalize payment and
-project entitlements.
+provider webhook or authenticated provider lookup can finalize payment and move
+the organization onto the purchased plan. A plan purchase covers one billing
+period plus a short grace period; when it lapses the organization returns to
+the default plan.
 
 ## Subscriptions and history
 
@@ -50,12 +52,42 @@ generated from versioned templates and archived with a content hash. Paddle
 documents shown by Fabort are accounting references and do not replace Paddle's
 buyer tax invoice.
 
+## Plans and limits
+
+Every organization is on exactly one plan. A plan sets every limit that can
+grow: projects, members, CPU, memory, disk, replicas, workloads per engine,
+public endpoints, builds per day, secrets and secret versions, snapshots and
+backups, log volume per day, log and metric retention, audit retention, and
+more. A limit is either a fixed amount, unlimited, or not included at all.
+
+Bark enforces limits on the server. Requests that would go past a limit are
+refused with a `quota.*` error that names the limit. If usage ends up above a
+limit, for example after a plan change, the newest workloads above it are
+stopped. They restart on their own once they fit again, either because the
+plan grew or because other workloads were removed. Retention limits delete
+older logs, metrics and audit records.
+
+Operators can also freeze a plan or one organization's plan, which stops
+anything from growing, or suspend it, which stops every workload. They can
+close signups or switch off individual capabilities across the platform. The
+Usage page shows any of these restrictions that are in effect.
+
+Owners with permission can split project-allocatable limits, such as CPU or
+memory, between projects from Project Settings. An allocation only narrows the
+organization's limit.
+
 ## Usage
 
-The Usage page reports metered consumption for the current billing period,
-including the used quantity, unit, configured limit, cost, currency, and billing
-period when available. CockroachDB is authoritative for commerce and money;
-ScyllaDB contains only asynchronously projected entitlements and limits.
+The Usage page shows the organization's plan and how much of each limit is
+used, with warnings near and over a limit. It also shows resources by project,
+the workloads holding CPU, memory and disk, and any workloads stopped for being
+over a limit. For a chosen month it adds metered consumption by day and by
+project, along with today's log volume and the current log and metric
+retention. Metered consumption is only shown where usage rollups are enabled
+for the deployment; otherwise the page says the data is unavailable.
+
+CockroachDB is authoritative for commerce and money. ScyllaDB holds plans,
+assignments and limits. ClickHouse holds telemetry and metering rollups.
 
 ## Finance controls
 
