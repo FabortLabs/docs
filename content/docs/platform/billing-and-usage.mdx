@@ -38,11 +38,12 @@ pass through Fabort. A browser redirect never activates service: only a verified
 provider webhook or authenticated provider lookup can finalize payment and move
 the organization onto the purchased plan. A plan purchase covers one billing
 period plus a short grace period; when it lapses the organization returns to
-the default plan.
+the default plan. Buy the plan again before then to extend it: the days left on
+the earlier payment are kept.
 
 ## Subscriptions and history
 
-Billing history lists payments, subscriptions, invoices, and credit notes. A
+Billing history lists payments, invoices, and credit notes. A
 provider change for a recurring subscription creates replacement checkout for
 renewal rather than silently moving the existing subscription. Pending and failed
 provider operations remain visible and can be reconciled by Finance.
