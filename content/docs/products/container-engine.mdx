@@ -12,6 +12,7 @@ Open **Container Engine**, select **New Container Service**, and choose a source
 
 - **Git Provider** connects a personal GitHub, GitLab, or Bitbucket Cloud account and selects one of its repositories. Providers that have not been configured by the platform remain visible but disabled.
 - **Git Repository** verifies the repository before creation, fetches its branches, selects its default branch, and detects common runtime, Dockerfile, command, and exposed-port settings. Public repositories need no credential. For private repositories, select or create an encrypted Git HTTPS/SSH project credential and verify again.
+- **Upload files** builds code you upload instead of a repository: drop a `.zip`, `.tar.gz`, `.tgz` or `.tar` archive, or pick a folder, which the browser packs into a `.tar.gz` without `.git` and `node_modules`. Archives can be up to 256 MiB. An archive holding a single folder builds from inside it. Without a Dockerfile, the selected runtime with the build and run commands builds and starts the code. To deploy new code later, use **Upload new code** on the service Overview; it builds the next revision.
 - **Existing Image** deploys a public OCI image directly or uses an OCI registry credential store for a private registry.
 
 Source deployments run as isolated BuildKit jobs. Fabort records the resolved build operation, pushes an immutable image, and creates the workload only after the build succeeds. Failed builds do not change active traffic and can be retried manually.
@@ -28,6 +29,8 @@ Source builds require `CONTAINER_BUILD_REGISTRY_PUSH_PREFIX`, `CONTAINER_BUILD_R
 
 Git provider connections use a shared callback in `GIT_OAUTH_CALLBACK_URL` and the provider credentials `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`, `GITLAB_CLIENT_ID`/`GITLAB_CLIENT_SECRET`, and `BITBUCKET_CLIENT_ID`/`BITBUCKET_CLIENT_SECRET`. A provider is disabled unless its client ID, client secret, and the callback URL are all present.
 
+Uploaded sources also need `RUSTFS_PUBLIC_ENDPOINT`, the RustFS address build pods download archives from through a one-hour signed URL. Archives are staged under `container-sources/` (an unused upload expires after 7 days), moved under `container-bundles/` when the service is created, and deleted with the service. The current and previous archive are kept so a rebuild works.
+
 For preset machines, persistent disks are mounted under `/mnt/disks/<disk-name>`. A machine template supplies its own disk configuration.
 
 Services replace their single active deployment immediately and retain up to 100 revision snapshots, including the active revision. Older revisions do not run. Warm versions, deferred promotion, traffic splitting, and automatic rollback are unavailable; the wizard disables unsupported release choices. Persistent disks use ReadWriteOnce storage. Both APIs enforce at most one replica on create, update, scale, and start; a stopped service may have zero desired replicas.
@@ -42,13 +45,34 @@ The **Overview** shows service status, ready and desired replicas, the active ve
 
 The remaining service pages provide:
 
-- **Scaling** — set replica bounds, CPU and optional memory targets, scale-up policy, and a 1, 5, or 10 minute scale-down delay. It also reports current HPA state.
+- **Scaling** — configure the autoscaler and see why it chose the current replica count (see [Autoscaling](#autoscaling)).
 - **Network** — create, edit, and remove HTTP, HTTPS, TLS, TCP, and UDP endpoints with internal or public exposure. The endpoint name is the default hostname label, and the complete hostname and availability state appear below the name while you type.
-- **Files** — choose a running pod, browse directories, read and write files, create directories, and delete paths.
+- **Files** — choose a running pod, browse directories, read and write files, create directories, delete paths, download a file or a folder as `.tar.gz`, and upload files up to 512 MiB.
 - **Logs** — stream container logs, inspect pod issues and Kubernetes events, and copy visible log lines.
 - **Metrics** — view live CPU, memory, network, disk, IOPS, replica, pod, and event data.
 - **Audit** — review events scoped to this service.
 - **Settings** — update the display name, image, environment, health checks, and shutdown grace period. Image or runtime configuration changes create a new revision and deployment-history entry. The first successful source build fills the initial revision; later rebuilds create new revisions. An apply failure remains visible in that history; retrying the same change reuses the pending revision.
+
+## Autoscaling
+
+Fabort runs its own autoscaler, fed by the same telemetry as the Metrics page, and re-evaluates every running service every 15 seconds. It keeps the service between the minimum and maximum replicas and sizes it so the busiest signal sits at its target:
+
+- **CPU** and optional **memory** utilization, measured against the machine size.
+- Optional **network in** and **network out** per replica, in KiB/s.
+
+The calculation follows the Kubernetes HPA. Each signal proposes `ceil(current × usage / target)` replicas and the highest proposal wins. A **tolerance** (10% by default) ignores small swings. Replicas still within their **warm-up time** are left out of averages, and replicas that have not reported count as idle when scaling out and as at-target when scaling in. Without any reading, the autoscaler never removes replicas.
+
+| Setting          | What it does                                                                                                                                                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mode             | **On**, **Scale out only** (never removes replicas automatically) or **Off** (runs exactly the minimum).                                                                                                                           |
+| Scale-out speed  | Conservative (1 replica a minute), Balanced (4 replicas or +100% every 15 s), Aggressive (10 replicas or +300% every 15 s), or a custom step and period.                                                                           |
+| Scale-in delay   | Replicas are removed only after the highest recommendation in this window allows it (1 to 30 minutes).                                                                                                                             |
+| Scale-in control | Removes at most a number or percentage of replicas within a window.                                                                                                                                                                |
+| Schedules        | Five-field cron windows in an IANA time zone that raise the floor, for example `0 9 * * MON-FRI` for 9 hours at 3 replicas. The highest active schedule wins; with a minimum of 0, the service runs only while a schedule is open. |
+| Predictive       | Forecasts CPU from the same window on the last 7 days and 3 weeks (the larger of the daily and weekly medians, once there are 3 days of history) and raises the floor ahead of the load.                                           |
+| Pause            | Holds the current count for 1, 4 or 24 hours; bounds still apply.                                                                                                                                                                  |
+
+The Scaling page shows the latest decision in words, the signals and what each asks for, the floor and its source, the limits that held the decision back, and the recent changes, which also appear on the service timeline. **Preview unsaved settings** shows what the page's settings would do now without saving them. Changing settings requires scale permission and is audited as `autoscaling.update`. Stopped, building and plan-suspended services are left alone.
 
 <Callout type="warn" title="Runtime file changes are pod-local">
   The file browser operates on a selected running pod. Treat image or deployment
