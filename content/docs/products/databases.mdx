@@ -4,7 +4,7 @@ description: Provision project databases with persistent storage and secret-back
 icon: Database
 ---
 
-Fabort can provision PostgreSQL, MySQL, Redis, and MongoDB instances in a project.
+Fabort can provision PostgreSQL, MySQL, Redis, Valkey, and MongoDB instances in a project. Valkey is wire compatible with Redis, so Redis clients and `redis://` URLs connect to it unchanged.
 
 ## Create a database
 
@@ -17,13 +17,13 @@ Fabort can provision PostgreSQL, MySQL, Redis, and MongoDB instances in a projec
 7. Set persistent storage from 1 to 1,000 GB.
 8. Review and create the database.
 
-Names are normalized to lowercase, dash-separated identifiers up to 48 characters. Redis defaults to the username `default`; other engines default to the normalized database name.
+Names are normalized to lowercase, dash-separated identifiers up to 48 characters. Redis and Valkey default to the username `default`; other engines default to the normalized database name.
 
 Fabort provisions the database workload, service, editable network endpoints, credentials, and Longhorn-backed persistent volume. If an older client omits endpoint configuration, Fabort creates an internal TCP endpoint on the catalog port.
 
 ## Connect
 
-Overview displays engine, version, status, host, port, username, storage, machine, and template. A **Connect** panel lists a connection URL and the matching command line client (`psql`, `mysql`, `redis-cli`, or `mongosh`) for the engine. The password is never shown: the commands read it from a `DB_PASSWORD` environment variable. Passwords are managed through Secrets; when a credential secret is attached, use **Open** to inspect it if your permissions allow secret-value access.
+Overview displays engine, version, status, host, port, username, storage, machine, and template. A **Connect** panel lists a connection URL and the matching command line client (`psql`, `mysql`, `redis-cli`, `valkey-cli`, or `mongosh`) for the engine. The password is never shown: the commands read it from a `DB_PASSWORD` environment variable. Passwords are managed through Secrets; when a credential secret is attached, use **Open** to inspect it if your permissions allow secret-value access.
 
 An address ending in `.svc.cluster.local` is internal to the runtime network. In that state, the frontend reports that the external endpoint is pending and the Connect panel stays empty until an endpoint with an address is active.
 
