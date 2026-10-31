@@ -1,0 +1,46 @@
+---
+title: Idle sleep
+description: Scale container services, game servers and databases to zero when nobody uses them, and wake them on the next real request.
+icon: Moon
+---
+
+Idle sleep stops a workload that has had no real use for a while and starts it again when someone needs it. A sleeping workload keeps its disks, addresses and settings; only its compute is released.
+
+Turn it on under **Settings → Idle sleep** on a container service, game server or database. Choose how long the workload may sit idle before it sleeps. **Wake now** starts a sleeping workload without waiting for traffic.
+
+## What counts as use
+
+Sleep is decided by real use, not by any traffic. Traffic that exists only to check on a workload or keep it awake is ignored.
+
+| Product                     | Counts as use                                                                    | Ignored                                                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Container Engine (HTTP)     | Requests from people and API clients, open WebSockets (for up to two hours each) | Uptime monitors and synthetic checks, health-check paths (`/health`, `/ping`, `/status`…), `HEAD` and `OPTIONS` requests, crawlers, and any client requesting the same path on a fixed schedule |
+| Container Engine (TCP, UDP) | Clients sending more than a small amount of data each minute                     | Connections that stay open without sending                                                                                                                                                      |
+| Databases                   | Queries and commands                                                             | Connection-pool keepalives (`SELECT 1`, `PING`, `COM_PING`, `ping`/`hello`) and idle pooled connections                                                                                         |
+| Game servers                | Players who are actually playing                                                 | Server-list pings and query packets, and idle (AFK) players                                                                                                                                     |
+
+Each game version decides how its ports are judged. Minecraft versions read the protocol: a server-list ping never counts, a login does, and a player who sends less than about 4 KiB a minute (standing still) stops counting after a minute. Other games count clients by traffic on their game ports; Steam server-browser queries never count.
+
+## Waking up
+
+The first real request wakes a sleeping workload:
+
+- **Websites and APIs:** browsers see a short "waking up" page that reloads itself; API clients get `503` with `Retry-After`. Monitors and crawlers get `503` without waking anything.
+- **Databases and TCP services:** the connection is held while the workload starts and then passes through, so most clients only see a slower first connection.
+- **Minecraft:** the server list shows the server as sleeping. Joining wakes it, and the player is asked to rejoin in about a minute.
+- **UDP games:** a player's first packets wake the server; game clients retry until it answers.
+
+A woken workload stays up for at least two minutes. Stopping a workload yourself always wins: traffic never starts a stopped workload.
+
+## Plans
+
+A plan can require idle sleep and limit how long workloads stay awake:
+
+- **Idle time before sleep** (`workload_sleep.idle_seconds.max`): workloads must sleep after at most this long without use, and sleep cannot be turned off.
+- **Awake time per day** (`workload_sleep.awake_seconds_per_day.max`): once a workload has run this long in a UTC day, it sleeps until midnight UTC whatever its traffic. This keeps simulated players and scripted traffic from keeping a server up all day.
+
+The Free plan sleeps workloads after 15 idle minutes and allows 12 awake hours a day each.
+
+## How it works
+
+While idle sleep is on, the workload's traffic passes through Fabort's activator, which records what counts as use and holds or answers requests while the workload starts. Services keep their addresses and hostnames. Clients see the activator's address as the source of their connection.

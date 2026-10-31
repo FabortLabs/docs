@@ -5,6 +5,7 @@
     "container-engine",
     "databases",
     "game-engine",
+    "idle-sleep",
     "secrets",
     "machine-templates"
   ]
