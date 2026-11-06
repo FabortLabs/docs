@@ -17,7 +17,7 @@ Open **Container Engine**, select **New Container Service**, and choose a source
 
 Source deployments run as isolated BuildKit jobs. Fabort records the resolved build operation, pushes an immutable image, and creates the workload only after the build succeeds. Failed builds do not change active traffic and can be retried manually.
 
-Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine preset or machine template. Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
+Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine (a platform preset, a project machine template, or a custom CPU and memory size). Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
 
 Repository verification rejects embedded credentials, inaccessible branches, unverified SSH hosts, and repository hosts that resolve to local, private, link-local, or metadata networks. Changing the repository or credential invalidates the previous verification. Creation verifies the selected branch again before a build starts.
 
