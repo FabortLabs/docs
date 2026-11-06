@@ -15,6 +15,8 @@ Game Engine runs one stateful dedicated-server instance from a platform-managed 
 5. Review the version's prefilled network endpoints. You can add, remove, or change endpoints before creation.
 6. Select a region and availability zone, then create the server.
 
+The machine step shows what the server reserves against your plan: one game server, its CPU, memory, disk, volumes, and settings. Creation stays disabled while the plan is still loading, when provisioning is paused, or when the reservation would exceed a limit.
+
 Images, digests, installation scripts, startup and stop commands, managed files, and storage mount paths are controlled by the selected version. Network endpoints start from version defaults and remain independently editable. Tenants cannot substitute arbitrary images or commands. A version can use a prebuilt image, SteamCMD, or an installer image and bounded installation script. Images are named by tag and may be pinned to a `sha256` digest for reproducible installs; a pinned digest is always verified. Installers run against persistent storage before the game starts.
 
 Catalog network definitions are editable presets for the same unified networking system used by other workloads. Target ports are container-local and may safely use the same number in every tenant workload. The endpoint name is the default hostname label, and the complete hostname and availability state appear below the name while you type. HTTP and HTTPS use hostname gateway routing, TLS passes encrypted traffic through to the workload, and public TCP/UDP/TLS endpoints receive an address and port from the selected cluster's configured pool through an atomic allocation claim. Users may override the default hostname or request a public address or port; blank allocation fields request automatic assignment. Tenants never share the same public hostname or public IP, port, and protocol tuple, and creation fails cleanly when no compatible route or allocation pool is available.
@@ -24,6 +26,7 @@ Fresh installations seed Minecraft Vanilla and Minecraft Paper versions. Adminis
 ## Operate a server
 
 - **Overview** reports runtime status, endpoint, release, configuration, health, events, and supports restart.
+- **Logs** shows the latest lines from the server pod, with search and a per-pod filter.
 - **Console** opens a streaming game console for the selected running pod and accepts commands.
 - **Files** provides pod file browsing, reading, writing, directory creation, and deletion.
 - **Metrics** charts CPU, memory, network, disk, IOPS, replicas, pods, and events.

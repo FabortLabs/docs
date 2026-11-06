@@ -17,6 +17,8 @@ Fabort can provision PostgreSQL, MySQL, Redis, Valkey, and MongoDB instances in 
 7. Set persistent storage from 1 to 1,000 GB.
 8. Review and create the database.
 
+The machine step shows what the database reserves against your plan: one database, its CPU, memory, and disk. Creation stays disabled while the plan is still loading, when provisioning is paused, or when the reservation would exceed a limit.
+
 Names are normalized to lowercase, dash-separated identifiers up to 48 characters. Redis and Valkey default to the username `default`; other engines default to the normalized database name.
 
 Fabort provisions the database workload, service, editable network endpoints, credentials, and Longhorn-backed persistent volume. If an older client omits endpoint configuration, Fabort creates an internal TCP endpoint on the catalog port.
@@ -29,14 +31,16 @@ An address ending in `.svc.cluster.local` is internal to the runtime network. In
 
 ## Database sections
 
-- **Overview**: status, host health, connection details, and the Connect panel.
+- **Overview**: status, host health, connection details, and the Connect panel, with **Start**, **Stop**, and **Restart**. Restart replaces the running pod and keeps its data; a stopped database must be started instead.
 - **Logs**: the latest 500 lines from the database pods, with search and a per-pod filter. Auto refresh runs every five seconds and can be paused.
 - **Metrics**: CPU, memory, network, and disk charts for a chosen time range and resolution, from the node agent's telemetry. When nothing was reported for the window the page says so instead of drawing empty charts.
-- **Backups**: persistent volume status, snapshots, backups, restores, and volume expansion.
+- **Files**: browse and edit files in the database pod. This needs database file access permission.
+- **Storage**: persistent volume status, snapshots, backups, restores, and volume expansion.
 - **Network**: add, change, or remove endpoints.
 - **Settings**: a description, labels, and deletion protection, plus the credential secret and the delete action.
+- **Audit log**: changes to this database, such as start, stop, restart, and delete. This needs project audit read permission.
 
-Logs and metrics require database read permission. Deletion protection is enforced by the API: while it is on, the database cannot be deleted from Studio or Operator until it is turned off.
+Logs and metrics require database read permission; start, stop, and restart require database update permission. Deletion protection is enforced by the API: while it is on, the database cannot be deleted from Studio or Operator until it is turned off.
 
 ## Delete a database
 
