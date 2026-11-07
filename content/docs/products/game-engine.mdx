@@ -26,7 +26,8 @@ Fresh installations seed Minecraft Vanilla and Minecraft Paper versions. Adminis
 ## Operate a server
 
 - **Overview** reports runtime status, endpoint, release, configuration, health, events, and supports restart.
-- **Logs** shows the latest lines from the server pod, with search and a per-pod filter.
+- **Logs** shows the latest lines from the server pod, with search and a per-pod filter; **History** reads stored lines within the plan's log retention.
+- **Shell** opens an interactive terminal in the server pod. It needs the game **shell** permission. Each session runs in one running pod you choose, ends after 15 minutes without input or at the stream's maximum length, and closes with a reason when the pod is replaced or your access changes. Opening and closing a session are audited with the pod and duration; keystrokes are not recorded. Images without `/bin/sh` cannot open a shell.
 - **Console** opens a streaming game console for the selected running pod and accepts commands.
 - **Files** provides pod file browsing, reading, writing, directory creation, and deletion.
 - **Metrics** charts CPU, memory, network, disk, IOPS, replicas, pods, and events.

@@ -32,7 +32,8 @@ An address ending in `.svc.cluster.local` is internal to the runtime network. In
 ## Database sections
 
 - **Overview**: status, host health, connection details, and the Connect panel, with **Start**, **Stop**, and **Restart**. Restart replaces the running pod and keeps its data; a stopped database must be started instead.
-- **Logs**: the latest 500 lines from the database pods, with search and a per-pod filter. Auto refresh runs every five seconds and can be paused.
+- **Logs**: the latest 500 lines from the database pods, with search and a per-pod filter. Auto refresh runs every five seconds and can be paused. **History** reads stored lines within the plan's log retention.
+- **Shell**: an interactive terminal in a database pod, for tools such as `psql` or `redis-cli`. It needs the database **shell** permission, because the pod's environment holds the database credentials. Each session runs in one running pod you choose, ends after 15 minutes without input or at the stream's maximum length, and closes with a reason when the pod is replaced or your access changes. Opening and closing a session are audited with the pod and duration; keystrokes are not recorded. Images without `/bin/sh` cannot open a shell.
 - **Metrics**: CPU, memory, network, and disk charts for a chosen time range and resolution, from the node agent's telemetry. When nothing was reported for the window the page says so instead of drawing empty charts.
 - **Files**: browse and edit files in the database pod. This needs database file access permission.
 - **Storage**: persistent volume status, snapshots, backups, restores, and volume expansion.

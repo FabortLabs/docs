@@ -17,7 +17,7 @@ Open **Container Engine**, select **New Container Service**, and choose a source
 
 Source deployments run as isolated BuildKit jobs. Fabort records the resolved build operation, pushes an immutable image, and creates the workload only after the build succeeds. Failed builds do not change active traffic and can be retried manually.
 
-Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine (a platform preset, a project machine template, or a custom CPU and memory size). Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, readiness and liveness paths, Docker context, Dockerfile path, build command, and run command.
+Configure the service name, region and availability zone, exposed ports and protocols, minimum and maximum replicas, CPU target, and a machine (a platform preset, a project machine template, or a custom CPU and memory size). Optional settings include persistent disks, entrypoint, typed environment variables, secret-backed environment variables, health checks, Docker context, Dockerfile path, build command, and run command.
 
 Repository verification rejects embedded credentials, inaccessible branches, unverified SSH hosts, and repository hosts that resolve to local, private, link-local, or metadata networks. Changing the repository or credential invalidates the previous verification. Creation verifies the selected branch again before a build starts.
 
@@ -41,17 +41,44 @@ New disks default to 1 GiB and are checked against the current plan. Existing vo
 
 ## Operate a service
 
-The **Overview** shows service status, ready and desired replicas, the active version, endpoint, current configuration, and recent deployments. Start, stop, kill, and restart require execute permission and act on the active version. A request for an older revision is rejected so a stale page cannot stop a newer rollout.
+The **Overview** shows service status, ready and desired replicas, the active version, endpoint, current configuration, and recent deployments. Start, stop, kill, and restart require operate permission and act on the active version. A request for an older revision is rejected so a stale page cannot stop a newer rollout.
 
 The remaining service pages provide:
 
 - **Scaling** — configure the autoscaler and see why it chose the current replica count (see [Autoscaling](#autoscaling)).
 - **Network** — create, edit, and remove HTTP, HTTPS, TLS, TCP, and UDP endpoints with internal or public exposure. The endpoint name is the default hostname label, and the complete hostname and availability state appear below the name while you type.
 - **Files** — choose a running pod, browse directories, read and write files, create directories, delete paths, download a file or a folder as `.tar.gz`, and upload files up to 512 MiB.
-- **Logs** — stream container logs, inspect pod issues and Kubernetes events, and copy visible log lines.
+- **Logs** — stream container logs, inspect pod issues and Kubernetes events, and copy visible log lines. **History** reads stored lines within the plan's log retention.
+- **Shell** — an interactive terminal in a running pod (`bash` when the image has it, otherwise `sh`). It needs the container **shell** permission, which is separate from execute because a shell can read the service's environment and secrets. Each session runs in one running pod you choose, ends after 15 minutes without input or at the stream's maximum length, and closes with a reason when the pod is replaced or your access changes. Opening and closing a session are audited with the pod and duration; keystrokes are not recorded. Images without `/bin/sh` cannot open a shell.
+- **Console** — attach to the container's own process, for programs that read from the keyboard. Turn on **Interactive** in Settings first; this gives the container a TTY and open input and restarts its instances. It needs execute permission.
+- **Runs** — run a command once, such as a database migration, in a new instance with the service's image, environment, secrets, machine size and network access, but without its storage volumes. One run at a time, a time limit from 1 minute to 6 hours (15 minutes by default), and status, exit code and output for each run; finished runs are kept for 7 days. A run counts against the plan as one more instance while it lasts. Running and cancelling need operate permission and are audited with the command; the list and output need read.
 - **Metrics** — view live CPU, memory, network, disk, IOPS, replica, pod, and event data. The **Replicas** section charts CPU or memory per replica, stacked to show how the total splits or as lines against the autoscaler's per-replica target, with replica chips to compare, the replica count over the window, and each replica's latest usage. History includes replicas that have since scaled away.
 - **Audit** — review events scoped to this service.
-- **Settings** — update the display name, image, environment, health checks, and shutdown grace period. Image or runtime configuration changes create a new revision and deployment-history entry. The first successful source build fills the initial revision; later rebuilds create new revisions. An apply failure remains visible in that history; retrying the same change reuses the pending revision.
+- **Settings** — update the display name, image, environment, [health checks](#health-checks), interactive console, and shutdown grace period. Image or runtime configuration changes create a new revision and deployment-history entry. The first successful source build fills the initial revision; later rebuilds create new revisions. An apply failure remains visible in that history; retrying the same change reuses the pending revision.
+
+## Health checks
+
+A service can have three checks, each optional:
+
+- **Readiness** sends traffic to an instance only while it passes.
+- **Liveness** restarts an instance that keeps failing.
+- **Startup** holds the other two until it passes once, for slow starts.
+
+| Option            | What it does                                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Protocol          | HTTP, HTTPS, HTTP/2, TCP, SSL/TLS or gRPC.                                                                                         |
+| Port              | The container port. HTTP, HTTPS and HTTP/2 checks without one use the first HTTP endpoint's port.                                  |
+| Request path      | HTTP checks; `/` by default. A check passes on status 200.                                                                         |
+| Host header       | HTTP checks send it as `Host`; SSL checks use it as the server name.                                                               |
+| Request           | TCP and SSL checks send these bytes after connecting (up to 1024).                                                                 |
+| Expected response | The first 1024 bytes of the HTTP body, or the TCP/SSL reply, must contain it. Empty accepts any 200 response or any connection.    |
+| PROXY header      | Sends a PROXY protocol v1 header first, for apps behind a proxy.                                                                   |
+| gRPC service      | The service name for the standard gRPC health check; empty checks the server.                                                      |
+| Interval, timeout | How often the check runs (1–300 s, default 10) and how long one attempt may take (up to the interval, default 5).                  |
+| Thresholds        | Successes in a row before an instance counts as healthy (readiness only, 1–10) and failures in a row before it is not (default 3). |
+| Initial delay     | Seconds after the container starts before the first check.                                                                         |
+
+Simple HTTP, HTTPS, TCP and gRPC checks are run by Kubernetes. Checks that match a response, send a payload or a PROXY header, or use HTTP/2 or SSL run in a small health-check sidecar next to each instance, which checks the container on localhost. HTTPS, HTTP/2 and SSL checks do not verify the certificate. Failed checks appear on the service's timeline. Services created before these options keep their readiness and liveness paths as HTTP checks until the settings are saved.
 
 ## Autoscaling
 
