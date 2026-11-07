@@ -37,9 +37,17 @@ The permission editor groups available permissions by resource area. Permission 
 resource:action:scope:access
 ```
 
-For example, permissions distinguish reading a resource from creating, updating, deleting, executing, scaling, deploying, rolling back, exporting, or rotating it where those actions are supported.
+For example, permissions distinguish reading a resource from creating, updating, deleting, operating, executing, scaling, deploying, rolling back, exporting, or rotating it where those actions are supported.
 
 Organization-scoped permissions cover organization settings, audit events, billing, limits, and team management. Project-scoped permissions cover projects and resources such as container services, game services, databases, machine templates, and secrets.
+
+Container services, game servers, and databases use the same action for the same work:
+
+- **Read** shows the workload, its logs, metrics, and events.
+- **Update** changes its settings and its network endpoints and firewall.
+- **Operate** starts, stops, and restarts it (and kills a game server).
+- **Execute** opens its files, and a game server's console.
+- **Archive**, **Restore**, and **Export** manage, restore, and download its storage snapshots and backups.
 
 ## Limit a permission to projects
 
@@ -48,5 +56,7 @@ For a granted project-scoped permission, select **Configure projects** and choos
 At least one project must remain selected when applying a project scope. Saving the editor persists both the permission set and its per-permission project scopes.
 
 <Callout type="warn" title="Use least privilege">
-  Grant only the actions a team needs, then narrow project-scoped permissions to the relevant projects. A broad resource permission and an all-project scope combine to provide organization-wide access to that resource type.
+  Grant only the actions a team needs, then narrow project-scoped permissions to
+  the relevant projects. A broad resource permission and an all-project scope
+  combine to provide organization-wide access to that resource type.
 </Callout>

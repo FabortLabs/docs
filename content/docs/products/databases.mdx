@@ -40,7 +40,7 @@ An address ending in `.svc.cluster.local` is internal to the runtime network. In
 - **Settings**: a description, labels, and deletion protection, plus the credential secret and the delete action.
 - **Audit log**: changes to this database, such as start, stop, restart, and delete. This needs project audit read permission.
 
-Logs and metrics require database read permission; start, stop, and restart require database update permission. Deletion protection is enforced by the API: while it is on, the database cannot be deleted from Studio or Operator until it is turned off.
+Logs and metrics require database read permission; start, stop, and restart require the database operate permission. Deletion protection is enforced by the API: while it is on, the database cannot be deleted from Studio or Operator until it is turned off.
 
 ## Delete a database
 
