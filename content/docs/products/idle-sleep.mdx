@@ -12,14 +12,24 @@ Turn it on under **Settings → Idle sleep** on a container service, game server
 
 Sleep is decided by real use, not by any traffic. Traffic that exists only to check on a workload or keep it awake is ignored.
 
-| Product                     | Counts as use                                                                    | Ignored                                                                                                                                                                                         |
-| --------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Container Engine (HTTP)     | Requests from people and API clients, open WebSockets (for up to two hours each) | Uptime monitors and synthetic checks, health-check paths (`/health`, `/ping`, `/status`…), `HEAD` and `OPTIONS` requests, crawlers, and any client requesting the same path on a fixed schedule |
-| Container Engine (TCP, UDP) | Clients sending more than a small amount of data each minute                     | Connections that stay open without sending                                                                                                                                                      |
-| Databases                   | Queries and commands                                                             | Connection-pool keepalives (`SELECT 1`, `PING`, `COM_PING`, `ping`/`hello`) and idle pooled connections                                                                                         |
-| Game servers                | Players who are actually playing                                                 | Server-list pings and query packets, and idle (AFK) players                                                                                                                                     |
+| Product                     | Counts as use                                                                | Ignored                                                                                                                                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Container Engine (HTTP)     | Requests from people and API clients, and open WebSockets as the plan allows | Uptime monitors and synthetic checks, health-check paths (`/health`, `/ping`, `/status`…), `HEAD` and `OPTIONS` requests, crawlers, and any client requesting the same path on a fixed schedule |
+| Container Engine (TCP, UDP) | Clients sending more than a small amount of data each minute                 | Connections that stay open without sending                                                                                                                                                      |
+| Databases                   | Queries and commands                                                         | Connection-pool keepalives (`SELECT 1`, `PING`, `COM_PING`, `ping`/`hello`) and idle pooled connections                                                                                         |
+| Game servers                | Players who are actually playing                                             | Server-list pings and query packets, and idle (AFK) players                                                                                                                                     |
 
 Each game version decides how its ports are judged. Minecraft versions read the protocol: a server-list ping never counts, a login does, and a player who sends less than about 4 KiB a minute (standing still) stops counting after a minute. Other games count clients by traffic on their game ports; Steam server-browser queries never count.
+
+### WebSockets
+
+An open WebSocket is not a request, so the plan decides how much it counts. The handshake can wake a sleeping workload in every case; the plan only decides what keeps it awake afterwards:
+
+- **Request mode:** open WebSockets never keep the workload awake. It sleeps after the idle time since the last ordinary request or wake, even with sockets open.
+- **Traffic mode:** an open WebSocket counts for a quiet time after it opened or after its client last sent messages. Ping, pong and close frames, and small library heartbeats (under about 128 bytes of messages a minute), are not messages.
+- **Connection mode:** an open WebSocket counts for as long as it stays open, even when silent.
+
+In traffic and connection mode the plan can also cap how long sockets alone keep the workload awake past its last ordinary request or wake. Reconnecting does not reset that cap. When the cap ends the workload sleeps, its sockets close, and the reason shown in **Idle sleep** says sockets were holding it.
 
 ## Waking up
 
@@ -39,7 +49,12 @@ A plan can require idle sleep and limit how long workloads stay awake:
 - **Idle time before sleep** (`workload_sleep.idle_seconds.max`): workloads must sleep after at most this long without use, and sleep cannot be turned off.
 - **Awake time per day** (`workload_sleep.awake_seconds_per_day.max`): once a workload has run this long in a UTC day, it sleeps until midnight UTC whatever its traffic. This keeps simulated players and scripted traffic from keeping a server up all day.
 
-The Free plan sleeps workloads after 15 idle minutes and allows 12 awake hours a day each.
+- **WebSocket keep-awake time** (`workload_sleep.websocket_seconds.max`): how long open WebSockets alone may keep a workload awake past its last ordinary request or wake. Not included or `0` is request mode; unlimited is no cap.
+- **WebSocket quiet time** (`workload_sleep.websocket_quiet_seconds.max`): how long an open WebSocket keeps counting after it opened or its client last sent messages. Unlimited is connection mode; a number is traffic mode; not included means only the moment of a message counts.
+
+Operators can set these per plan or override them for one organization, for example to put an organization that holds sockets open around the clock back into request mode.
+
+The Free plan sleeps workloads after 15 idle minutes and allows 12 awake hours a day each. Open WebSockets keep a Free workload awake, even when silent, for at most two hours past its last request or wake.
 
 ## How it works
 
