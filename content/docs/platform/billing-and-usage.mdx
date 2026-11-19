@@ -38,7 +38,8 @@ pass through Fabort. A browser redirect never activates service: only a verified
 provider webhook or authenticated provider lookup can finalize payment and move
 the organization onto the purchased plan. A plan purchase covers one billing
 period plus a short grace period; when it lapses the organization returns to
-the default plan. Buy the plan again before then to extend it: the days left on
+the default plan, or to the Empty plan if it is not its owner's first
+organization. Buy the plan again before then to extend it: the days left on
 the earlier payment are kept.
 
 ## Subscriptions and history
