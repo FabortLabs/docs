@@ -27,10 +27,9 @@ tax behavior, tax, and total. Provider eligibility is determined by published
 country policy, provider capabilities, tax coverage, and merchant approval; the
 browser cannot select an arbitrary provider.
 
-- Paddle is the merchant of record. Paddle's localized price, tax result, legal
-  seller, and buyer invoice or receipt are authoritative.
-- Razorpay is a payment gateway. Fabort calculates tax and issues the invoice and
-  any credit notes under the applicable published seller registration.
+Payments go through Razorpay, a payment gateway. Fabort calculates tax and
+issues the invoice and any credit notes under the applicable published seller
+registration.
 
 Checkout may redirect to a hosted page, initialize a provider SDK using public
 data, remain pending, or already be complete. Card and bank credentials never
@@ -50,9 +49,7 @@ renewal rather than silently moving the existing subscription. Pending and faile
 provider operations remain visible and can be reconciled by Finance.
 
 Gateway invoices and credit notes are immutable, sequentially numbered documents
-generated from versioned templates and archived with a content hash. Paddle
-documents shown by Fabort are accounting references and do not replace Paddle's
-buyer tax invoice.
+generated from versioned templates and archived with a content hash.
 
 ## Plans and limits
 
